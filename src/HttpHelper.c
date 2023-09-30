@@ -1,5 +1,13 @@
 #include "HttpHelper.h"
 
+#ifndef DEBUG_ENABLED
+#define DEBUG_ENABLED
+#endif
+
+#ifdef DEBUG_ENABLED
+static const char *TAG = "Http Client >>> ";
+#endif
+
 esp_http_client_handle_t init_connection(http_client_config config) {
     esp_http_client_config_t clientConfig = {
         .url = config.url,
@@ -47,10 +55,10 @@ void http_client_download_file(http_client_config config) {
     ESP_LOGI(TAG, "Downloaded %d bytes to %s", (int)total_len, config.download_config.filePath);
 }
 
-cJSON http_client_read_json_body(http_client_config config) {
+cJSON* http_client_read_json_body(http_client_config config) {
    esp_http_client_handle_t client = init_connection(config);
     if (client == NULL) {
-        return;
+        return NULL;
     }
 
     int64_t total_len = esp_http_client_fetch_headers(client);
@@ -60,7 +68,7 @@ cJSON http_client_read_json_body(http_client_config config) {
         ESP_LOGE(TAG, "response is too large [ %jd ]", total_len);
         esp_http_client_cleanup(client);
      //    xEventGroupSetBits(http_download_group, HTTP_DOWNLOAD_FAIL);
-        return;
+        return NULL;
     }
 
     // read json 
